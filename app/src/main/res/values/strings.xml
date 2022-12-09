@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidDEV</string>
+    <string name="app_name">NotesApp</string>
     <string name="password">Password</string>
     <string name="signin_button">Sign in</string>
     <string name="textview">Please enter your password (numeric)</string>

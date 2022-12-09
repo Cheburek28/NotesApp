@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/signin_button"
         android:layout_width="133dp"
         android:layout_height="57dp"
         android:text="@string/signin_button"
