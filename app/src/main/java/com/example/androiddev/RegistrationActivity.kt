@@ -1,13 +1,12 @@
 package com.example.androiddev
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import com.example.androiddev.databinding.RegistrationBinding
 import by.kirich1409.viewbindingdelegate.viewBinding
-import java.io.File
 
 class RegistrationActivity : AppCompatActivity() {
     private val viewModel by viewModels<RegistrationViewModel> {
@@ -20,10 +19,15 @@ class RegistrationActivity : AppCompatActivity() {
         setContentView(R.layout.registration)
 
         viewBinding.saveRegistrationButton.setOnClickListener {
-            viewModel.onSave()
+            viewModel.onSave(User(viewBinding.editTextName.text.toString(),
+                viewBinding.editTextPassword.text.toString()))
         }
 
+        viewModel.registrationFinished.observe(this, Observer { finish() }) // Привязываем сигнал об окончании регистрации
+
     }
+
+
 
 }
 

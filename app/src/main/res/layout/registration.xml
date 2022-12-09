@@ -32,21 +32,21 @@
             android:text="Nickname" />
 
         <EditText
-            android:id="@+id/editTextTextPersonName6"
+            android:id="@+id/editTextName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textPersonName" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/password_label"
             android:layout_width="match_parent"
             android:layout_height="34dp"
             android:gravity="center"
             android:text="Password (numeric)" />
 
         <EditText
-            android:id="@+id/editTextNumberPassword2"
+            android:id="@+id/editTextPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"

@@ -4,40 +4,48 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import by.kirich1409.viewbindingdelegate.viewBinding
+import com.example.androiddev.databinding.ActivityMainBinding
+import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
+    private val viewBinding by viewBinding(ActivityMainBinding::bind)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        viewBinding.signinButton.setOnClickListener { passwordReady() }
+    }
 
-        val externalDir = getExternalFilesDir(null)
+    override fun onStart() {
+        super.onStart()
+        val settingsFile = File(getExternalFilesDir(null),".settings")
 
-        val settings_file = File(externalDir,".setiings")
-
-        settings_file.delete()
-
-        var isCreated = false
-
-        try {
-            isCreated = settings_file.exists()
-        } catch (e: IOException) {
-            Log.e("Exception", "File check failed: $e");
-        }
-
-        if (!isCreated) {
+        if (!settingsFile.exists()) {
             openRegistration()
-//                .apply {
-//                    putExtra()
-//                } // Для добавления допаргументов
+        }
+    }
+
+    private fun passwordReady() {
+        val settingsFile = File(getExternalFilesDir(null),".settings")
+        val json : JSONObject = JSONObject(settingsFile.readText())
+        val password = viewBinding.editTextNumberPassword.text.toString()
+
+        if (password == json.get("password").toString()) {
+            openNotesList()
         }
     }
 
 
     private fun openRegistration() {
         startActivity(Intent(this, RegistrationActivity::class.java))
+    }
+
+    private fun openNotesList() {
+        startActivity(Intent(this, NotesListActivity::class.java))
     }
 }
 
