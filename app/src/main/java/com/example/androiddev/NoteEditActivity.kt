@@ -1,7 +1,8 @@
 package com.example.androiddev
 
 import android.os.Bundle
-import android.widget.Toast
+import android.view.Gravity
+import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.androiddev.databinding.NoteEditBinding
@@ -34,6 +35,21 @@ class NoteEditActivity : AppCompatActivity(){
 
         viewBinding.saveeditnote.setOnClickListener { onSaveClicked() }
 
+        viewBinding.menupopbutton.setOnClickListener {
+            val popupMenu: PopupMenu = PopupMenu(this, viewBinding.menupopbutton)
+            popupMenu.gravity = Gravity.END
+            popupMenu.menu.add("Delete").setOnMenuItemClickListener {
+                deleteNote()
+                false
+            }
+            popupMenu.menu.add("Add user").setOnMenuItemClickListener {
+                addUser()
+                false
+            }
+            popupMenu.show()
+
+        }
+
     }
 
     private fun onSaveClicked() {
@@ -41,5 +57,17 @@ class NoteEditActivity : AppCompatActivity(){
 
         finish()
     }
+
+    private fun deleteNote() {
+        // Тут надо прописать удаление (Можно его прописать у самой заметки)
+
+        finish()
+    }
+
+    private fun addUser() {
+        // Надо открыть виджет выбора пользователя
+    }
+
+
 
 }

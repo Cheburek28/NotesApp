@@ -1,5 +1,6 @@
 package com.example.androiddev
 
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,7 +8,7 @@ import androidx.lifecycle.ViewModel
 class NotesListViewModel() : ViewModel() {
 
     private val _notes = MutableLiveData(listOf<Note>(
-        Note("nick", "офвл", "sdfvser"),
+        Note("nick", "офвлjdfkavjkfkvbdfkslbsfkvbjfkvbsdkvdfjv", "sdfvser"),
         Note("nick", "ывсфывсы", "serfresfwefsdegsefvfe5gsbrtgbs"),
         Note("nick", "sdfvsdfv", "erbgb tggdrvgrgrdtg bb thyunjuyj ur "),
         Note("nick", "dsfv", "erg tgevrgrtgtyhytc by ebbt"),
@@ -30,5 +31,6 @@ class NotesListViewModel() : ViewModel() {
     fun onNoteSelected(note : Note) {
         _openNote.postValue(note)
     }
+
 }
 

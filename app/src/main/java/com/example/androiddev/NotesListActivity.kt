@@ -31,6 +31,10 @@ class NotesListActivity  : AppCompatActivity() {
             openNote(it)
         }
 
+        viewBinding.createnotebutton.setOnClickListener {
+            openNote(Note("nick", "", "")) // Нужно передавать текущую дату и ник текущего пользователя
+        }
+
     }
 
     private fun openNote(note: Note) {
