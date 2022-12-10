@@ -32,6 +32,7 @@
         </activity>
         <activity android:name="com.example.androiddev.RegistrationActivity" />
         <activity android:name="com.example.androiddev.NotesListActivity" />
+        <activity android:name="com.example.androiddev.NoteEditActivity" />
     </application>
 
 </manifest>
