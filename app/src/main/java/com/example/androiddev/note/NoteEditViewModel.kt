@@ -89,13 +89,13 @@ class NoteEditViewModel : ViewModel() {
 
             if (res.res != 0)
                 _deletingFinished.postValue(Event(res))
+
+            if (removeNoteFromFile(note, externalDir))
+                _deletingFinished.postValue(Event(EventRes()))
             else {
-                if (saveNoteToFile(note, externalDir))
-                    _deletingFinished.postValue(Event(res))
-                else {
-                    _deletingFinished.postValue(Event(EventRes(-1)))
-                }
+                _deletingFinished.postValue(Event(EventRes(-1)))
             }
+
         }
     }
 

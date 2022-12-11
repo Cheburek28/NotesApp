@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androiddev.Event
 import com.example.androiddev.EventRes
-import com.example.androiddev.entities.Note
 import com.example.androiddev.common.SingleLiveEvent
+import com.example.androiddev.entities.Note
 import com.example.androiddev.internet.MySQLDBRepository
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +42,11 @@ class NotesListViewModel(private val user_name: String, private val mExternalDir
     fun update_notes() {
         viewModelScope.launch(Dispatchers.IO) {
             val notes = MySQLDBRepository().getUserNotes(user_name)
+            if (notes.isEmpty()) {
+                _notes.postValue(getAllNotesFromLocalStorage())
+                return@launch
+            }
+
             _notes.postValue(notes)
         }
     }
@@ -55,13 +60,62 @@ class NotesListViewModel(private val user_name: String, private val mExternalDir
             if (!putNewNoteToLocalStorage(note))
                 return@launch
             val res = viewModelScope.async(Dispatchers.IO) {
-                return@async MySQLDBRepository().addNote(note)
+                MySQLDBRepository().addNote(note)
             }
 
             val r = res.await()
             _creationFinished.postValue(Event(r))
 
         }
+    }
+
+    private fun getAllNotesFromLocalStorage() : List<Note> {
+        val dataFile = File(mExternalDir,"appdata.json")
+
+        val notes : MutableList<Note> = mutableListOf()
+
+        try {
+            if (!dataFile.exists()) {
+                if (!dataFile.createNewFile()) {
+                    _creationFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+                    return emptyList()
+                }
+            }
+        } catch (e: IOException) {
+            _creationFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+            return emptyList()
+        }
+
+        try {
+            var json = JSONObject()
+            if (dataFile.readText() != "")
+                json = JSONObject(dataFile.readText())
+            val gson = Gson()
+
+            for (id in json.keys()) {
+                val n_json = JSONObject(json.getString(id))
+                val n = Note(
+                    n_json.getString("owner_name"),
+                    n_json.getString("id"),
+                    n_json.getString("title"),
+                    n_json.getString("content"),
+                    allowed_user_name = n_json.getString("allowed_user_name")
+                )
+                notes.add(n)
+            }
+        }
+        catch (e: JSONException) {
+            e.printStackTrace()
+            _creationFinished.postValue(Event(EventRes(-1, e.stackTraceToString())))
+            return emptyList()
+        } catch (e: IOException) {
+            _creationFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+            e.printStackTrace()
+            return emptyList()
+        }
+
+        return notes.toList()
+
     }
 
     private fun putNewNoteToLocalStorage(note: Note) : Boolean {

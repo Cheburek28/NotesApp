@@ -35,7 +35,7 @@ class MySQLDBRepository() {
         return coroutineScope {
             val res: Deferred<EventRes> = async {
 
-                val connection = getConnection() ?: return@async EventRes(-1)
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
 
                 try {
                     val resultSet = connection.prepareStatement("SELECT name FROM users WHERE name = \"${username}\"").executeQuery()
@@ -65,7 +65,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<List<Note>> = async {
-                var notes : MutableList<Note> = mutableListOf()
+                val notes : MutableList<Note> = mutableListOf()
                 val connection = getConnection() ?: return@async emptyList()
 
                 try {
@@ -101,7 +101,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(-1)
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
 
                 try {
                     val statement = connection.prepareStatement("INSERT INTO notes (id, title, content, owner_name) " +
@@ -123,7 +123,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(-1)
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
 
                 try {
                     val statement = connection.prepareStatement("UPDATE notes SET title = \"${note.title}\", content = \"${note.content}\" " +
@@ -145,7 +145,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(-1)
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
 
                 try {
                     val statement = connection.prepareStatement("DELETE FROM notes " +
@@ -167,7 +167,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(-1)
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
 
                 try {
                     val resultSet = connection.prepareStatement("SELECT name FROM users WHERE name = \"${note.allowed_user_name}\"").executeQuery()
