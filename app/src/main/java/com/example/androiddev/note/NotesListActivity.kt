@@ -51,6 +51,8 @@ class NotesListActivity : AppCompatActivity() {
 
         userName = intent.getStringExtra(USER_DETAIL_ARGUMENT_KEY).toString()
 
+        viewBinding.NotesTextView.setText("Your notes, $userName")
+
         with(viewBinding.notesList) {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             adapter = notesListAdapter

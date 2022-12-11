@@ -141,6 +141,61 @@ class MySQLDBRepository() {
         }
     }
 
+    suspend fun deleteNote(note: Note) : EventRes {
+
+        return coroutineScope {
+            val res: Deferred<EventRes> = async {
+                val connection = getConnection() ?: return@async EventRes(-1)
+
+                try {
+                    val statement = connection.prepareStatement("DELETE FROM notes " +
+                            "WHERE id = \"${note.id}\"")
+                    statement.executeQuery()
+
+                    return@async  EventRes()
+                } catch (e: SQLException) {
+                    // handle any errors
+                    e.printStackTrace()
+                    return@async  EventRes(-1, e.toString())
+                }
+            }
+            return@coroutineScope res.await()
+        }
+    }
+
+    suspend fun addAllowedUserToNote(note: Note) : EventRes {
+
+        return coroutineScope {
+            val res: Deferred<EventRes> = async {
+                val connection = getConnection() ?: return@async EventRes(-1)
+
+                try {
+                    val resultSet = connection.prepareStatement("SELECT name FROM users WHERE name = \"${note.allowed_user_name}\"").executeQuery()
+
+                    if (resultSet!!.first()) {
+
+                        val statement = connection.prepareStatement("UPDATE notes SET allowed_user_name = \"${note.allowed_user_name}\" " +
+                                "WHERE id = \"${note.id}\"")
+                        statement.executeQuery()
+
+                        return@async  EventRes()
+
+                    }
+                   return@async EventRes(
+                            1,
+                    "There is no user with this name. Please try other one."
+                    )
+
+                } catch (e: SQLException) {
+                    // handle any errors
+                    e.printStackTrace()
+                    return@async  EventRes(-1, e.toString())
+                }
+            }
+            return@coroutineScope res.await()
+        }
+    }
+
 }
 
 //fun isConnectedToThisServer(host: String): Boolean {

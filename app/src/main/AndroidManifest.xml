@@ -37,6 +37,7 @@
         <activity android:name="com.example.androiddev.registration.RegistrationActivity" />
         <activity android:name="com.example.androiddev.note.NotesListActivity" />
         <activity android:name="com.example.androiddev.note.NoteEditActivity" />
+        <activity android:name="com.example.androiddev.allowd_users.SetAllowedUserActivity" />
     </application>
 
 </manifest>

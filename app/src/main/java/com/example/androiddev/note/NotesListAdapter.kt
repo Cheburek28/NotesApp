@@ -29,7 +29,7 @@ class NotesListAdapter (
         with(holder.binding) {
             noteName.text = item.title
             date.text = item.date.toString()
-            users.text = item.allowed_user_name
+            users.text = "owner: ${item.owner_name}, others: ${item.allowed_user_name}"
             root.setOnClickListener { onNoteClicked(item) }
         }
 

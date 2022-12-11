@@ -22,6 +22,9 @@ class NoteEditViewModel : ViewModel() {
     private val _savingFinished = MutableLiveData<Event<EventRes>>()
     val savingFinished: LiveData<Event<EventRes>> = _savingFinished
 
+    private val _deletingFinished = MutableLiveData<Event<EventRes>>()
+    val deletingFinished: LiveData<Event<EventRes>> = _deletingFinished
+
     fun saveNote(note: Note, externalDir: File?) {
         viewModelScope.launch(Dispatchers.IO) {
             val res = MySQLDBRepository().saveNote(note)
@@ -71,6 +74,63 @@ class NoteEditViewModel : ViewModel() {
             return false
         } catch (e: IOException) {
             _savingFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+            e.printStackTrace()
+            return false
+        }
+
+        return true
+
+
+    }
+
+    fun deleteNote(note: Note, externalDir: File?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val res = MySQLDBRepository().deleteNote(note)
+
+            if (res.res != 0)
+                _deletingFinished.postValue(Event(res))
+            else {
+                if (saveNoteToFile(note, externalDir))
+                    _deletingFinished.postValue(Event(res))
+                else {
+                    _deletingFinished.postValue(Event(EventRes(-1)))
+                }
+            }
+        }
+    }
+
+    private fun removeNoteFromFile(note: Note, externalDir: File?) : Boolean {
+
+        val dataFile = File(externalDir,"appdata.json")
+
+        try {
+            if (!dataFile.exists()) {
+                if (!dataFile.createNewFile()) {
+                    _deletingFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+                    return false
+                }
+            }
+        } catch (e: IOException) {
+            _deletingFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+            return false
+        }
+
+        try {
+            var json = JSONObject()
+            if (dataFile.readText() != "")
+                json = JSONObject(dataFile.readText())
+            val gson = Gson()
+            if (json.has(note.id))
+                json.remove(note.id)
+            dataFile.writeText(json.toString())
+            Log.i("Data file","\n\n\n\n Current file state \n${dataFile.readText()}\n\n\n\n\n\n\n")
+        }
+        catch (e: JSONException) {
+            e.printStackTrace()
+            _deletingFinished.postValue(Event(EventRes(-1, e.stackTraceToString())))
+            return false
+        } catch (e: IOException) {
+            _deletingFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
             e.printStackTrace()
             return false
         }
