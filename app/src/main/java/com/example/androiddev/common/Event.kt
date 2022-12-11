@@ -25,3 +25,8 @@ open class Event<out T>(private val content: T) {
      */
     fun peekContent(): T = content
 }
+
+data class EventRes (
+    val res: Int = 0,
+    val text: String = ""
+)

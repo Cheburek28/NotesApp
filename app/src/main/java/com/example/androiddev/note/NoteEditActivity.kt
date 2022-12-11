@@ -1,10 +1,12 @@
-package com.example.androiddev
+package com.example.androiddev.note
 
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import by.kirich1409.viewbindingdelegate.viewBinding
+import com.example.androiddev.entities.Note
+import com.example.androiddev.R
 import com.example.androiddev.databinding.NoteEditBinding
 
 class NoteEditActivity : AppCompatActivity(){

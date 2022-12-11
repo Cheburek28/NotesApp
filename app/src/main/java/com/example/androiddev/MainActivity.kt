@@ -2,13 +2,13 @@ package com.example.androiddev
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.androiddev.databinding.ActivityMainBinding
+import com.example.androiddev.note.NotesListActivity
+import com.example.androiddev.registration.RegistrationActivity
 import org.json.JSONObject
 import java.io.File
-import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     private val viewBinding by viewBinding(ActivityMainBinding::bind)
@@ -25,7 +25,10 @@ class MainActivity : AppCompatActivity() {
         val settingsFile = File(getExternalFilesDir(null),".settings")
 
         if (!settingsFile.exists()) {
-            openRegistration()
+                openRegistration()
+        } else {
+            if ( settingsFile.readText() != "" )
+                openRegistration()
         }
     }
 

@@ -1,8 +1,9 @@
-package com.example.androiddev
+package com.example.androiddev.note
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.androiddev.entities.Note
 import com.example.androiddev.databinding.NotePanelBinding
 
 class NotesListAdapter (

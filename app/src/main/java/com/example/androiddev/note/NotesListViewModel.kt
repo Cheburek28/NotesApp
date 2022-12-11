@@ -1,9 +1,10 @@
-package com.example.androiddev
+package com.example.androiddev.note
 
-import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.androiddev.entities.Note
+import com.example.androiddev.common.SingleLiveEvent
 
 class NotesListViewModel() : ViewModel() {
 

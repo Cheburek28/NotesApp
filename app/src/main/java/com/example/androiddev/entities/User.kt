@@ -1,4 +1,4 @@
-package com.example.androiddev
+package com.example.androiddev.entities
 
 data class User (
     private val nickName : String,
