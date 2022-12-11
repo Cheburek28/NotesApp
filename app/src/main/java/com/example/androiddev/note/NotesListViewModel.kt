@@ -3,34 +3,102 @@ package com.example.androiddev.note
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.androiddev.Event
+import com.example.androiddev.EventRes
 import com.example.androiddev.entities.Note
 import com.example.androiddev.common.SingleLiveEvent
+import com.example.androiddev.internet.MySQLDBRepository
+import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.File
+import java.io.IOException
 
-class NotesListViewModel() : ViewModel() {
+class NotesListViewModel(private val user_name: String, private val mExternalDir: File?) : ViewModel() {
 
-    private val _notes = MutableLiveData(listOf<Note>(
-        Note("nick", "офвлjdfkavjkfkvbdfkslbsfkvbjfkvbsdkvdfjv", "sdfvser"),
-        Note("nick", "ывсфывсы", "serfresfwefsdegsefvfe5gsbrtgbs"),
-        Note("nick", "sdfvsdfv", "erbgb tggdrvgrgrdtg bb thyunjuyj ur "),
-        Note("nick", "dsfv", "erg tgevrgrtgtyhytc by ebbt"),
-        Note("nick", "sdfv", "rtevrteg"),
-        Note("nick", "sdfvdf", "ervtgrgct"),
-        Note("nick", "asdfa", "ertgcrtgc"),
-        Note("nick", "fghdfgh", "ercgrdfsdfx"),
-        Note("nick", "dfghfgd", "cgtrghyer"),
-        Note("nick", "aerf", "crtgertgcr"),
-        Note("nick", "sdfg", "cgertgrsdsd"),
-        Note("nick", "sdfgdsgsdv", "ckgkdklfgskdl;glk"),
-        Note("nick", "sdvfdve", "dfglksdgj;sdj'gitoi"),
-    ))
+    private val _creationFinished = MutableLiveData<Event<EventRes>>()
+    val creationFinished: LiveData<Event<EventRes>> = _creationFinished
 
+    private val _creationInLocallyFinished = MutableLiveData<Event<EventRes>>()
+    val creationInLocallyFinished: LiveData<Event<EventRes>> = _creationInLocallyFinished
+
+
+    private var _notes = MutableLiveData<List<Note>>()
     val notes :  LiveData<List<Note>> = _notes
 
     private val _openNote = SingleLiveEvent<Note>()
     val openNote: LiveData<Note> = _openNote
 
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            update_notes()
+        }
+    }
+
+    fun update_notes() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val notes = MySQLDBRepository().getUserNotes(user_name)
+            _notes.postValue(notes)
+        }
+    }
+
     fun onNoteSelected(note : Note) {
         _openNote.postValue(note)
+    }
+
+    fun createNewNote(note: Note) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!putNewNoteToLocalStorage(note))
+                return@launch
+            val res = viewModelScope.async(Dispatchers.IO) {
+                return@async MySQLDBRepository().addNote(note)
+            }
+
+            val r = res.await()
+            _creationFinished.postValue(Event(r))
+
+        }
+    }
+
+    private fun putNewNoteToLocalStorage(note: Note) : Boolean {
+        val dataFile = File(mExternalDir,"appdata.json")
+
+        try {
+            if (!dataFile.exists()) {
+                if (!dataFile.createNewFile()) {
+                    _creationFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+                    return false
+                }
+            }
+        } catch (e: IOException) {
+            _creationFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+            return false
+        }
+
+        try {
+            var json = JSONObject()
+            if (dataFile.readText() != "")
+                json = JSONObject(dataFile.readText())
+            val gson = Gson()
+            json.put(note.id, gson.toJson(note))
+            dataFile.writeText(json.toString())
+        }
+        catch (e: JSONException) {
+            e.printStackTrace()
+            _creationFinished.postValue(Event(EventRes(-1, e.stackTraceToString())))
+            return false
+        } catch (e: IOException) {
+            _creationFinished.postValue(Event(EventRes(2, "Unable to work with file. Please contact the developer")))
+            e.printStackTrace()
+            return false
+        }
+
+        return true
+
     }
 
 }

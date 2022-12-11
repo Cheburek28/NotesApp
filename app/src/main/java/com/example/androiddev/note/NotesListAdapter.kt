@@ -27,9 +27,9 @@ class NotesListAdapter (
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val item = notes[position]
         with(holder.binding) {
-            noteName.text = item.name
-            date.text = item.last_update_date.toString()
-            users.text = item.other_user_name
+            noteName.text = item.title
+            date.text = item.date.toString()
+            users.text = item.allowed_user_name
             root.setOnClickListener { onNoteClicked(item) }
         }
 

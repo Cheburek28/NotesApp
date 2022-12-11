@@ -3,15 +3,22 @@ package com.example.androiddev.note
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.PopupMenu
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import by.kirich1409.viewbindingdelegate.viewBinding
+import com.example.androiddev.*
 import com.example.androiddev.entities.Note
-import com.example.androiddev.R
 import com.example.androiddev.databinding.NoteEditBinding
+import com.example.androiddev.internet.MySQLDBRepository
+import kotlinx.coroutines.coroutineScope
 
 class NoteEditActivity : AppCompatActivity(){
 
     private val viewBinding by viewBinding(NoteEditBinding::bind)
+
+    private val viewModel by viewModels<NoteEditViewModel>()
 
     companion object {
         const val NOTE_DETAIL_ARGUMENT_KEY = "NOTE_DETAIL_ARGUMENT_KEY"
@@ -31,7 +38,7 @@ class NoteEditActivity : AppCompatActivity(){
         val note = intent.getParcelableExtra<Note>(NOTE_DETAIL_ARGUMENT_KEY)
 
         if (note != null) {
-            viewBinding.edittitleofnote.setText(note.name)
+            viewBinding.edittitleofnote.setText(note.title)
             viewBinding.editcontentofnote.setText(note.content)
         }
 
@@ -52,12 +59,51 @@ class NoteEditActivity : AppCompatActivity(){
 
         }
 
+        viewModel.savingFinished.observe(this, Observer { saveFinished(it) })
+
     }
 
     private fun onSaveClicked() {
-        // Save note
+        val note = intent.getParcelableExtra<Note>(NOTE_DETAIL_ARGUMENT_KEY)
 
-        finish()
+        if (note != null) {
+            note.title = viewBinding.edittitleofnote.text.toString()
+            note.content = viewBinding.editcontentofnote.text.toString()
+            viewModel.saveNote(note, getExternalFilesDir(null))
+        } else {
+            Toast.makeText(
+                applicationContext,
+                "This wwindow didn't fetch note! Please contact the developer!",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun saveFinished(res: Event<EventRes>) {
+        when (res.peekContent().res ) {
+            0 -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Saving success",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+            -1 -> {
+                Toast.makeText(
+                    applicationContext,
+                    "Unknown error! Please contact the developer. ${res.peekContent().text}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            else -> {
+                Toast.makeText(
+                    applicationContext,
+                    res.peekContent().text,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun deleteNote() {

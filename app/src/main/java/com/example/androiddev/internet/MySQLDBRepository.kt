@@ -3,22 +3,16 @@ package com.example.androiddev.internet
 import android.util.Log
 import com.example.androiddev.EventRes
 import com.example.androiddev.MySQLConnectionInfo
+import com.example.androiddev.entities.Note
 import kotlinx.coroutines.*
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.Socket
-import java.net.SocketAddress
-import java.net.URL
-
-
 import java.sql.SQLException
 import java.sql.DriverManager
 import java.sql.Connection
-import java.util.concurrent.TimeoutException
+import java.sql.Date
 
 class MySQLDBRepository() {
 
-    suspend fun getConnection() : Connection? {
+    private suspend fun getConnection() : Connection? {
         return coroutineScope {
             val conn : Deferred<Connection?> = async(Dispatchers.IO) {
                 var conn: Connection? = null
@@ -40,33 +34,107 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
+
+                val connection = getConnection() ?: return@async EventRes(-1)
+
                 try {
-                    val connection = getConnection() ?: return@async EventRes(-1)
+                    val resultSet = connection.prepareStatement("SELECT name FROM users WHERE name = \"${username}\"").executeQuery()
 
-                    val result =
-                        connection.prepareStatement("SELECT name FROM users WHERE name = \"${username}\"").executeQuery()
-
-                    return@async EventRes(-1)
-//                    val session = client.startSession()
-//                    val dbUser =
-//                        usersColl.findOne("{\"name\" : \"${username}\"}")
-//
-//                    if (dbUser != null) {
-//                        return@async EventRes(
-//                            1,
-//                            "This user name is already in use. Please try other one."
-//                        )
-//                    } else {
-//                        usersColl.insertOne(Document("name", username))
-//                        return@async EventRes()
-//                }
-                } catch (e: TimeoutException) {
-                    return@async EventRes(
+                    if (resultSet!!.first()) {
+                        return@async EventRes(
+                            1,
+                            "This user name is already in use. Please try other one."
+                        )
+                    } else {
+                        connection.prepareStatement("INSERT INTO users(name) VALUE (\"${username}\")").executeQuery()
+                        return@async EventRes()
+                    }
+                } catch (e: SQLException) {
+                    // handle any errors
+                    return@async EventRes (
                         3,
-                        "Unable to connect to database. Please check you internet connection!"
+                        e.toString()
                     )
-                } catch (e: Exception) {
-                    return@async (EventRes(-1, e.stackTraceToString()))
+                }
+            }
+            return@coroutineScope res.await()
+        }
+    }
+
+    suspend fun getUserNotes(username: String) : List<Note> {
+
+        return coroutineScope {
+            val res: Deferred<List<Note>> = async {
+                var notes : MutableList<Note> = mutableListOf()
+                val connection = getConnection() ?: return@async emptyList()
+
+                try {
+                    val resultSet = connection.prepareStatement("SELECT id, title, content, owner_name, allowed_user_name, date " +
+                            "FROM notes " +
+                            "WHERE owner_name = \"${username}\" OR allowed_user_name = \"${username}\"").executeQuery()
+
+                    while (resultSet!!.next()) {
+                        val n = Note (
+                            owner_name = resultSet.getString("owner_name"),
+                            title = resultSet.getString("title"),
+                            date = Date(resultSet.getTimestamp("date").time),
+                            id = resultSet.getString("id"),
+                            allowed_user_name = resultSet.getString("allowed_user_name") ?: "",
+                            content = resultSet.getString("content"),
+                        )
+
+                        notes.add(n)
+                    }
+
+                    return@async notes.toList()
+                } catch (e: SQLException) {
+                    // handle any errors
+                    e.printStackTrace()
+                    return@async notes.toList()
+                }
+            }
+            return@coroutineScope res.await()
+        }
+    }
+
+    suspend fun addNote(note: Note) : EventRes {
+
+        return coroutineScope {
+            val res: Deferred<EventRes> = async {
+                val connection = getConnection() ?: return@async EventRes(-1)
+
+                try {
+                    val statement = connection.prepareStatement("INSERT INTO notes (id, title, content, owner_name) " +
+                            "VALUES (${note.id}, \"${note.title}\", \"${note.content}\", \"${note.owner_name}\") ")
+                    statement.executeQuery()
+
+                    return@async  EventRes()
+                } catch (e: SQLException) {
+                    // handle any errors
+                    e.printStackTrace()
+                    return@async  EventRes(-1, e.toString())
+                }
+            }
+            return@coroutineScope res.await()
+        }
+    }
+
+    suspend fun saveNote(note: Note) : EventRes {
+
+        return coroutineScope {
+            val res: Deferred<EventRes> = async {
+                val connection = getConnection() ?: return@async EventRes(-1)
+
+                try {
+                    val statement = connection.prepareStatement("UPDATE notes SET title = \"${note.title}\", content = \"${note.content}\" " +
+                            "WHERE id = \"${note.id}\"")
+                    statement.executeQuery()
+
+                    return@async  EventRes()
+                } catch (e: SQLException) {
+                    // handle any errors
+                    e.printStackTrace()
+                    return@async  EventRes(-1, e.toString())
                 }
             }
             return@coroutineScope res.await()

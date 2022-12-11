@@ -2,9 +2,11 @@ package com.example.androiddev
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.androiddev.databinding.ActivityMainBinding
+import com.example.androiddev.note.NoteEditActivity
 import com.example.androiddev.note.NotesListActivity
 import com.example.androiddev.registration.RegistrationActivity
 import org.json.JSONObject
@@ -27,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         if (!settingsFile.exists()) {
                 openRegistration()
         } else {
-            if ( settingsFile.readText() != "" )
+            if ( settingsFile.readText() == "" )
                 openRegistration()
         }
     }
@@ -39,6 +41,12 @@ class MainActivity : AppCompatActivity() {
 
         if (password == json.get("password").toString()) {
             openNotesList()
+        } else {
+            Toast.makeText(
+                applicationContext,
+                "Incorrect PIN, please try again!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -48,9 +56,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openNotesList() {
-        startActivity(Intent(this, NotesListActivity::class.java))
+        val settingsFile = File(getExternalFilesDir(null),".settings")
+        val json = JSONObject(settingsFile.readText())
+
+//        startActivity(Intent(this, NotesListActivity::class.java).apply {
+//            putExtra(NotesListActivity.USER_DETAIL_ARGUMENT_KEY, json.get("name").toString())
+//        })
+
+        val intent = Intent(this@MainActivity,NotesListActivity::class.java)
+        intent.putExtra(NotesListActivity.USER_DETAIL_ARGUMENT_KEY, json.get("name").toString())
+        startActivity(intent)
     }
 }
+
+
+
 
 //
 //abstract class BaseActivity : AppCompatActivity() { // for logging
