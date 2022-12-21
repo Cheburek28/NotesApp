@@ -41,7 +41,6 @@ class RegistrationViewModel(private val mExternalDir : File?) : ViewModel() {
         try {
             json.put("name", user.get_nickname())
             json.put("password", user.get_password())
-//            json.put("offices", listOf("California", "Washington", "Virginia"))
         } catch (e: JSONException) {
             e.printStackTrace()
             _registrationFinished.postValue(Event(EventRes(-1, e.stackTraceToString())))
@@ -61,7 +60,12 @@ class RegistrationViewModel(private val mExternalDir : File?) : ViewModel() {
             val res = viewModelScope.async(Dispatchers.IO) {
                 return@async MySQLDBRepository().addUser(user.get_nickname())
             }
-            _registrationFinished.postValue(Event(res.await()))
+            val r = res.await()
+
+            if(r.res != 0)
+                settingsFile.delete()
+
+            _registrationFinished.postValue(Event(r))
         }
     }
 

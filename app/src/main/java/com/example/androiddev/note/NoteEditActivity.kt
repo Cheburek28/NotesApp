@@ -3,6 +3,7 @@ package com.example.androiddev.note
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -64,9 +65,13 @@ class NoteEditActivity : AppCompatActivity(){
         viewModel.savingFinished.observe(this, Observer { saveFinished(it) })
         viewModel.deletingFinished.observe(this, Observer { deletingFinished(it) })
 
+        viewBinding.progressBar.visibility = View.GONE
+
     }
 
     private fun onSaveClicked() {
+        viewBinding.progressBar.visibility = View.VISIBLE
+
         val note = intent.getParcelableExtra<Note>(NOTE_DETAIL_ARGUMENT_KEY)
 
         if (note != null) {
@@ -83,6 +88,7 @@ class NoteEditActivity : AppCompatActivity(){
     }
 
     private fun saveFinished(res: Event<EventRes>) {
+        viewBinding.progressBar.visibility = View.GONE
         when (res.peekContent().res ) {
             0 -> {
                 Toast.makeText(
@@ -103,13 +109,14 @@ class NoteEditActivity : AppCompatActivity(){
                 Toast.makeText(
                     applicationContext,
                     res.peekContent().text,
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }
     }
 
     private fun deletingFinished(res: Event<EventRes>) {
+        viewBinding.progressBar.visibility = View.GONE
         when (res.peekContent().res ) {
             0 -> {
                 Toast.makeText(
@@ -130,13 +137,14 @@ class NoteEditActivity : AppCompatActivity(){
                 Toast.makeText(
                     applicationContext,
                     res.peekContent().text,
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }
     }
 
     private fun deleteNote() {
+        viewBinding.progressBar.visibility = View.VISIBLE
         val note = intent.getParcelableExtra<Note>(NOTE_DETAIL_ARGUMENT_KEY)
 
         if (note != null) {
@@ -144,7 +152,7 @@ class NoteEditActivity : AppCompatActivity(){
         } else {
             Toast.makeText(
                 applicationContext,
-                "This wwindow didn't fetch note! Please contact the developer!",
+                "This window didn't fetch note! Please contact the developer!",
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -154,6 +162,10 @@ class NoteEditActivity : AppCompatActivity(){
         val note = intent.getParcelableExtra<Note>(NOTE_DETAIL_ARGUMENT_KEY)
 
         if (note != null) {
+            note.title = viewBinding.edittitleofnote.text.toString()
+            note.content = viewBinding.editcontentofnote.text.toString()
+            viewModel.saveNote(note, getExternalFilesDir(null))
+
             startActivity(
                 Intent(this, SetAllowedUserActivity::class.java)
                     .apply {
@@ -163,7 +175,7 @@ class NoteEditActivity : AppCompatActivity(){
         } else {
             Toast.makeText(
                 applicationContext,
-                "This wwindow didn't fetch note! Please contact the developer!",
+                "This window didn't fetch note! Please contact the developer!",
                 Toast.LENGTH_LONG
             ).show()
         }

@@ -12,6 +12,8 @@ import java.sql.Date
 
 class MySQLDBRepository() {
 
+    var last_res = EventRes() // Для отработки ошибок в функции работающей со списком заметок
+
     private suspend fun getConnection() : Connection? {
         return coroutineScope {
             val conn : Deferred<Connection?> = async(Dispatchers.IO) {
@@ -66,7 +68,10 @@ class MySQLDBRepository() {
         return coroutineScope {
             val res: Deferred<List<Note>> = async {
                 val notes : MutableList<Note> = mutableListOf()
+                last_res = EventRes(1, "DataBase unreachable. Please check your internet connection. " +
+                        "You are unable to edit you notes now!")
                 val connection = getConnection() ?: return@async emptyList()
+                last_res = EventRes(-1)
 
                 try {
                     val resultSet = connection.prepareStatement("SELECT id, title, content, owner_name, allowed_user_name, date " +
@@ -85,11 +90,12 @@ class MySQLDBRepository() {
 
                         notes.add(n)
                     }
-
+                    last_res = EventRes()
                     return@async notes.toList()
                 } catch (e: SQLException) {
                     // handle any errors
                     e.printStackTrace()
+                    last_res = EventRes(1, "Error occurred while selecting data from database. Please contact the developer!")
                     return@async notes.toList()
                 }
             }
@@ -101,7 +107,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. You can't add notes now. Please check your internet connection")
 
                 try {
                     val statement = connection.prepareStatement("INSERT INTO notes (id, title, content, owner_name) " +
@@ -123,7 +129,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
+                val connection = getConnection() ?: return@async EventRes(1, "Connecting to database error. You can't save notes now. Please check your internet connection")
 
                 try {
                     val statement = connection.prepareStatement("UPDATE notes SET title = \"${note.title}\", content = \"${note.content}\" " +
@@ -145,14 +151,14 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. You can't delete notes now. Please check your internet connection. ")
 
                 try {
                     val statement = connection.prepareStatement("DELETE FROM notes " +
                             "WHERE id = \"${note.id}\"")
                     statement.executeQuery()
 
-                    return@async  EventRes()
+                    return@async EventRes()
                 } catch (e: SQLException) {
                     // handle any errors
                     e.printStackTrace()
@@ -167,7 +173,7 @@ class MySQLDBRepository() {
 
         return coroutineScope {
             val res: Deferred<EventRes> = async {
-                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection")
+                val connection = getConnection() ?: return@async EventRes(1, "DataBase connection error. Please check your internet connection.")
 
                 try {
                     val resultSet = connection.prepareStatement("SELECT name FROM users WHERE name = \"${note.allowed_user_name}\"").executeQuery()

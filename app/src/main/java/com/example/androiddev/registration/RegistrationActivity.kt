@@ -1,6 +1,7 @@
 package com.example.androiddev.registration
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +22,8 @@ class RegistrationActivity : AppCompatActivity() {
         setContentView(R.layout.registration)
 
         viewBinding.saveRegistrationButton.setOnClickListener {
+            viewBinding.progressBar.visibility = View.VISIBLE
+
             viewModel.onSave(
                 User(viewBinding.editTextName.text.toString(),
                 viewBinding.editTextPassword.text.toString())
@@ -29,9 +32,11 @@ class RegistrationActivity : AppCompatActivity() {
 
         viewModel.registrationFinished.observe(this, Observer { onRegistrationFinished(it) }) // Привязываем сигнал об окончании регистрации
 
+        viewBinding.progressBar.visibility = View.GONE
     }
 
     private fun onRegistrationFinished(res: Event<EventRes>) {
+        viewBinding.progressBar.visibility = View.GONE
         when (res.peekContent().res ) {
             0 -> {
                 Toast.makeText(
@@ -52,7 +57,7 @@ class RegistrationActivity : AppCompatActivity() {
                 Toast.makeText(
                     applicationContext,
                     res.peekContent().text,
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }

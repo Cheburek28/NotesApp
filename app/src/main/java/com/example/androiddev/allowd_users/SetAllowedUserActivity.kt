@@ -1,6 +1,7 @@
 package com.example.androiddev.allowd_users
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -35,9 +36,12 @@ class SetAllowedUserActivity : AppCompatActivity()  {
 
         viewModel.additingFinished.observe(this, Observer { additingFinished(it) })
 
+        viewBinding.progressBar.visibility = View.GONE
+
     }
 
     private fun onButtonClicked() {
+        viewBinding.progressBar.visibility = View.VISIBLE
         val note = intent.getParcelableExtra<Note>(NoteEditActivity.NOTE_DETAIL_ARGUMENT_KEY)
 
         if (note != null) {
@@ -53,6 +57,7 @@ class SetAllowedUserActivity : AppCompatActivity()  {
     }
 
     private fun additingFinished(res: Event<EventRes>) {
+        viewBinding.progressBar.visibility = View.GONE
         when (res.peekContent().res ) {
             0 -> {
                 Toast.makeText(
@@ -73,7 +78,7 @@ class SetAllowedUserActivity : AppCompatActivity()  {
                 Toast.makeText(
                     applicationContext,
                     res.peekContent().text,
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }

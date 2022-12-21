@@ -26,6 +26,8 @@ class NotesListViewModel(private val user_name: String, private val mExternalDir
     private val _creationInLocallyFinished = MutableLiveData<Event<EventRes>>()
     val creationInLocallyFinished: LiveData<Event<EventRes>> = _creationInLocallyFinished
 
+    private val _updatingFinished = MutableLiveData<Event<EventRes>>()
+    val updatingFinished: LiveData<Event<EventRes>> = _updatingFinished
 
     private var _notes = MutableLiveData<List<Note>>()
     val notes :  LiveData<List<Note>> = _notes
@@ -41,13 +43,32 @@ class NotesListViewModel(private val user_name: String, private val mExternalDir
 
     fun update_notes() {
         viewModelScope.launch(Dispatchers.IO) {
-            val notes = MySQLDBRepository().getUserNotes(user_name)
-            if (notes.isEmpty()) {
-                _notes.postValue(getAllNotesFromLocalStorage())
-                return@launch
+            val repo = MySQLDBRepository()
+            val notes = repo.getUserNotes(user_name).toMutableList()
+
+            _updatingFinished.postValue(Event(repo.last_res))
+
+//            if (notes.size == 0) {
+//                _notes.postValue(getAllNotesFromLocalStorage())
+//                return@launch
+//            }
+
+            val local_notes = getAllNotesFromLocalStorage()
+            for (local_note in local_notes) {
+                var is_in_online = false
+                for (note in notes) {
+                    if (note.id == local_note.id) {
+                        is_in_online = true
+                        break
+                    }
+                }
+                if (!is_in_online) {
+                    repo.addNote(local_note)
+                    notes.add(local_note)
+                }
             }
 
-            _notes.postValue(notes)
+            _notes.postValue(notes.toList())
         }
     }
 
@@ -57,14 +78,15 @@ class NotesListViewModel(private val user_name: String, private val mExternalDir
 
     fun createNewNote(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (!putNewNoteToLocalStorage(note))
-                return@launch
             val res = viewModelScope.async(Dispatchers.IO) {
                 MySQLDBRepository().addNote(note)
             }
 
             val r = res.await()
             _creationFinished.postValue(Event(r))
+
+            if (r.res == 0)
+                putNewNoteToLocalStorage(note)
 
         }
     }

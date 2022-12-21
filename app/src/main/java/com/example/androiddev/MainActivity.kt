@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(
                 applicationContext,
                 "Incorrect PIN, please try again!",
-                Toast.LENGTH_SHORT
+                Toast.LENGTH_LONG
             ).show()
         }
     }

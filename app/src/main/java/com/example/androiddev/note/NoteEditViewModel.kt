@@ -29,8 +29,10 @@ class NoteEditViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val res = MySQLDBRepository().saveNote(note)
 
-            if (res.res != 0)
+            if (res.res != 0) {
                 _savingFinished.postValue(Event(res))
+                return@launch
+            }
             else {
                 if (saveNoteToFile(note, externalDir))
                     _savingFinished.postValue(Event(res))
@@ -87,8 +89,10 @@ class NoteEditViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val res = MySQLDBRepository().deleteNote(note)
 
-            if (res.res != 0)
+            if (res.res != 0) {
                 _deletingFinished.postValue(Event(res))
+                return@launch
+            }
 
             if (removeNoteFromFile(note, externalDir))
                 _deletingFinished.postValue(Event(EventRes()))

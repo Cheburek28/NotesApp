@@ -18,7 +18,7 @@ class AllowedUserViewModel : ViewModel() {
 
     fun addAllowedUser(note: Note) {
         viewModelScope.launch(Dispatchers.IO) {
-            val res = MySQLDBRepository().addAllowedUserToNote(note)
+            val res = MySQLDBRepository().addAllowedUserToNote(note) // updating only on server because it is not possible info for local storage
 
             _additingFinished.postValue(Event(res))
         }

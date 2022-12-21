@@ -3,5 +3,6 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">baobab.su</domain>
         <domain includeSubdomains="true">google.com</domain>
+        <domain includeSubdomains="true">192.168.5.98</domain>
     </domain-config>
 </network-security-config>
